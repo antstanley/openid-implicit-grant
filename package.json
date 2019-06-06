@@ -1,6 +1,6 @@
 {
   "name": "openid-implicit-grant",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "3Kb client for OpenID Implicit Grant auth flow",
   "main": "index.js",
   "scripts": {
