@@ -77,7 +77,6 @@ function clearStateNonce () {
 function reqURL (options) {
   let resultURL = ''
   if (typeof options === 'object') {
-    console.log(JSON.stringify(options))
     if (
       options.hasOwnProperty('domain') &&
       options.hasOwnProperty('client_id') &&
@@ -106,42 +105,46 @@ function reqURL (options) {
       resultURL += options.hasOwnProperty('state')
         ? '&state=' + options.state
         : ''
-
-      // console.log(resultURL)
     } else {
       resultURL = ''
-      console.log('Required parameters missing')
+      console.error('Required parameters missing')
     }
   } else {
     resultURL = ''
-    console.log('Invalid Object passed to function reqString')
+    console.error('Invalid Object passed to function reqString')
   }
   return resultURL
 }
 
+function genUrl (options) {
+  options.state = genState()
+  options.nonce = genNonce()
+  return reqURL(options)
+}
+
 function randomString (length) {
-  var bytes = new Uint8Array(length)
-  var random = window.crypto.getRandomValues(bytes)
-  var result = []
-  var charset =
+  const bytes = new Uint8Array(length)
+  const random = window.crypto.getRandomValues(bytes)
+  const charset =
     '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._~'
+  let result = []
   random.forEach(function (c) {
     result.push(charset[c % charset.length])
   })
   return result.join('')
 }
 
-function genNonceState () {
+function genNonce () {
   const nonce = randomString(64)
-  const state = randomString(32)
-
-  window.sessionStorage.setItem('state', state)
   window.sessionStorage.setItem('nonce', nonce)
-
-  return {
-    nonce,
-    state
-  }
+  return nonce
 }
 
-export default { genNonceState, reqURL, logout, login }
+function genState () {
+  const state = randomString(32)
+  window.sessionStorage.setItem('state', state)
+
+  return state
+}
+
+export default { genNonce, genState, reqURL, logout, login }
