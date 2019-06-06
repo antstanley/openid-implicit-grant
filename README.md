@@ -15,3 +15,14 @@ This is a basic, small, lightweight client that does the following
 The library relies on localStorage for state for the claims, and sessionStorage for temporary state for the nonce and state parameters required in the authorisation URL.
 
 You will need to implement your own state for the OpenID auth options.
+
+Basic usage
+
+```sh
+npm install openid-implicit-grant
+```
+
+Implicit grant with OpenID Connect requires calling a `/authorize` URL with various options specified.
+
+
+

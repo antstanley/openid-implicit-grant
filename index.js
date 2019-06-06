@@ -116,7 +116,7 @@ function reqURL (options) {
   return resultURL
 }
 
-function genUrl (options) {
+function genURL (options) {
   options.state = genState()
   options.nonce = genNonce()
   return reqURL(options)
@@ -147,4 +147,4 @@ function genState () {
   return state
 }
 
-export default { genNonce, genState, reqURL, logout, login }
+export { genNonce, genState, genURL, reqURL, logout, login }
