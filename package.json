@@ -11,10 +11,10 @@
   },
   "keywords": [
     "openid",
-    "openid",
     "connect",
     "implicit",
-    "grant"
+    "grant",
+    "oidc"
   ],
   "author": "A. Stanley",
   "license": "MIT"
