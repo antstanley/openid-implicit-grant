@@ -14,15 +14,46 @@ This is a basic, small, lightweight client that does the following
 
 The library relies on localStorage for state for the claims, and sessionStorage for temporary state for the nonce and state parameters required in the authorisation URL.
 
-You will need to implement your own state for the OpenID auth options.
+You will need to implement your own state for the OpenID auth options. This library *does not validate the JWT* returned using Implicit Grant. It is recommended this is done server side by whatever service your app is using.
 
-Basic usage
+## Basic usage
 
 ```sh
 npm install openid-implicit-grant
 ```
 
-Implicit grant with OpenID Connect requires calling a `/authorize` URL with various options specified.
+Implicit grant with OpenID Connect requires calling a `/authorize` URL with various options specified. The client creates this URL, along with a `state` and `nonce` parameter to ensure uniqueness of the response.
+
+Generate URL
+
+```js
+import { genURL } from 'openid-implicit-grant'
+
+const options = {
+    domain: '* Domain name for your OIDC tenant, without http:// or /authorize *',
+    client_id: '* OIDC Client Id *', 
+    redirect_uri: 'http://localhost:1234/callback.html', //the callback URL the OIDC connect provider redirects to.
+    response_type: 'id_token', // Implicit Grant requires the id_token response type
+    scope: 'openid profile' //OpenID scope
+}
+
+export default function authRedirect () {
+  return genURL(options) // return the OIDC authorization URL needed to authenticate the client.
+}
+```
+
+Decode returned JWT
+
+```js
+import { login } from 'openid-implicit-grant'
+
+// hash string in the funciton below is the string after the # in the url returned by the OIDC provider. It must not include #.
+function decodeToken(hash) { 
+    const { idToken, claims } = login(hash)
+    console.log(claims) 
+    return { idToken, claims }
+}
+```
 
 ## Example
 
