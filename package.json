@@ -1,7 +1,7 @@
 {
-  "name": "openid-implicit-grant",
-  "version": "0.0.4",
-  "description": "3Kb client for OpenID Implicit Grant auth flow",
+  "name": "@esmodule/openid-implicit-grant",
+  "version": "0.0.1",
+  "description": "Basic client for OpenID Implicit Grant auth flow implemented using es modules",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,8 +14,16 @@
     "connect",
     "implicit",
     "grant",
-    "oidc"
+    "oidc",
+    "esmodule",
+    "code",
+    "esm"
   ],
   "author": "A. Stanley",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "ava": "^3.10.1",
+    "dotenv-cli": "^3.2.0",
+    "esm": "^3.2.25"
+  }
 }

@@ -1,25 +1,25 @@
-# OpenID Connect Implicit Grant Client
+# ES Module OpenID Connect Implicit Grant Client
 
-3KB client implementing the OpenID Connect Implicit Grant authentication flow with no dependencies.
+A small client implementing the OpenID Connect Implicit Grant authentication flow with no dependencies.
 
-This was created because a number of other OpenID clients support all the authentication options for OpenID Connect, so you end up shipping all that code with your client. 
+This was created because a number of other OpenID clients support all the authentication options for OpenID Connect, so you end up shipping all that code with your client.
 
 This is a basic, small, lightweight client that does the following
 
-- Generates the OpenID authorisation URL, with a nonce and state object that can   be used for implicit grant
+- Generates the OpenID authorisation URL, with a nonce and state object that can be used for implicit grant
 
-- Decodes the returned JWT and writes the claims to localStorage
+- Decodes the response and returns it
 
-- Remove the claims from localStorage when logout method is called
+The library does not implement any state management. You need to implement this yourself.
 
-The library relies on localStorage for state for the claims, and sessionStorage for temporary state for the nonce and state parameters required in the authorisation URL.
+relies on localStorage for state for the claims, and sessionStorage for temporary state for the nonce and state parameters required in the authorisation URL.
 
-You will need to implement your own state for the OpenID auth options. This library *does not validate the JWT* returned using Implicit Grant. It is recommended this is done server side by whatever service your app is using.
+You will need to implement your own state for the OpenID auth options. This library _does not validate the JWT_ returned using Implicit Grant. It is recommended this is done server side by whatever service your app is using.
 
 ## Basic usage
 
 ```sh
-npm install openid-implicit-grant
+npm install es-oidc-implicit-grant
 ```
 
 Implicit grant with OpenID Connect requires calling a `/authorize` URL with various options specified. The client creates this URL, along with a `state` and `nonce` parameter to ensure uniqueness of the response.
@@ -27,31 +27,37 @@ Implicit grant with OpenID Connect requires calling a `/authorize` URL with vari
 Generate URL
 
 ```js
-import { genURL } from 'openid-implicit-grant'
+import { login } from 'es-oidc-implicit-grant'
 
 const options = {
-    domain: '* Domain name for your OIDC tenant, without http:// or /authorize *',
-    client_id: '* OIDC Client Id *', 
-    redirect_uri: 'http://localhost:1234/callback.html', //the callback URL the OIDC connect provider redirects to.
-    response_type: 'id_token', // Implicit Grant requires the id_token response type
-    scope: 'openid profile' //OpenID scope
+  domain: '* Domain name for your OIDC tenant, without http:// or /authorize *',
+  client_id: '* OIDC Client Id *',
+  redirect_uri: 'http://localhost:1234/callback.html', //the callback URL the OIDC connect provider redirects to.
+  scope: 'openid profile' //OpenID scope
 }
 
 export default function authRedirect () {
-  return genURL(options) // return the OIDC authorization URL needed to authenticate the client.
+  // return the OIDC authorization URL needed to authenticate the client, along with the state and nonce needed later to validate the response
+  const { url, validation } = login(options)
+
+  // put the validation object somewhere you can retrieve it from later, this example uses sessionStorage, but could be your frameworks state mangement API
+  window.sessionStorage.setItem('validation', JSON.stringify(validation))
+
+  return url
 }
 ```
 
-Decode returned JWT
+Decode returned JWT in the callback
 
 ```js
-import { login } from 'openid-implicit-grant'
+import { callback } from 'es-oidc-implicit-grant'
 
 // hash string in the funciton below is the string after the # in the url returned by the OIDC provider. It must not include #.
-function decodeToken(hash) { 
-    const { idToken, claims } = login(hash)
-    console.log(claims) 
-    return { idToken, claims }
+function decodeToken (hash) {
+  // retrieve the validation object from where you stashed it
+  const validation = JSON.stringify(window.sessionStorage.getItem('validation'))
+  const { idToken, accessToken } = callback(hash, validation)
+  return { idToken, accessToken }
 }
 ```
 
@@ -59,7 +65,7 @@ function decodeToken(hash) {
 
 Configure your OpenID Connect provider (Auth0, Okta, AWS Cognito, Azure Active Directory, etc) as per the relevant instructions for Implicit Grant. Set the `redirect_uri` to `http://localhost:1234/callback.html` in the OpenID Connect provider setup.
 
-Then create the following pages. 
+Then create the following pages.
 
 ### Login page
 
@@ -68,17 +74,25 @@ Then create the following pages.
 ```html
 <!DOCTYPE html>
 <html lang="en">
-    <title></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
-    <body>
-        <div class="w-100 vh-100 dt v-mid">
-            <div class="dtc v-mid tc">
-                <input id="login_button" type="button" value="Login" class="pointer grow ph4 pv3 no-underline ba br2 b--transparent bg-navy white f4 avenir">
-            </div>
-        </div>
-    </body>
-    <script src="login.js" type="module"></script>
+  <title></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/tachyons/css/tachyons.min.css"
+  />
+  <body>
+    <div class="w-100 vh-100 dt v-mid">
+      <div class="dtc v-mid tc">
+        <input
+          id="login_button"
+          type="button"
+          value="Login"
+          class="pointer grow ph4 pv3 no-underline ba br2 b--transparent bg-navy white f4 avenir"
+        />
+      </div>
+    </div>
+  </body>
+  <script src="login.js" type="module"></script>
 </html>
 ```
 
@@ -87,14 +101,13 @@ Then create the following pages.
 Update `options` object in the JS below with the details from your OpenID connect provider
 
 ```js
-import { genURL } from 'openid-implicit-grant'
+import { login } from 'es-oidc-implicit-grant'
 
 const options = {
-    domain: '* Domain name for your OIDC tenant, without http:// or /authorize *',
-    client_id: '* OIDC Client Id *',
-    redirect_uri: 'http://localhost:1234/callback.html',
-    response_type: 'id_token',
-    scope: 'openid profile'
+  domain: '* Domain name for your OIDC tenant, without http:// or /authorize *',
+  client_id: '* OIDC Client Id *',
+  redirect_uri: 'http://localhost:1234/callback.html',
+  scope: 'openid profile'
 }
 
 const loginButton = document.getElementById('login_button')
@@ -115,34 +128,39 @@ This is the page that your OIDC provider will redirect to.
 ```html
 <!DOCTYPE html>
 <html lang="en">
-    <title></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
-    <body>
-        <div class="w-100 vh-100 dt v-mid">
-            <div class="dtc v-mid tc">
-                <span id="login_status" class="gray f3 code"></span>
-            </div>
-        </div>
-    </body>
-    <script src="callback.js" type="module"></script>
+  <title></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/tachyons/css/tachyons.min.css"
+  />
+  <body>
+    <div class="w-100 vh-100 dt v-mid">
+      <div class="dtc v-mid tc">
+        <span id="login_status" class="gray f3 code"></span>
+      </div>
+    </div>
+  </body>
+  <script src="callback.js" type="module"></script>
 </html>
 ```
 
 #### callback.js
 
 ```js
-import { login } from 'openid-implicit-grant'
+import { callback } from 'es-oidc-implicit-grant'
 
 const returnHash = window.location.href.split('#')[1] || ''
 
-const { idToken, claims } = login(returnHash)
+const validation = JSON.stringify(window.sessionStorage.getItem('validation'))
+
+const { idToken, accessToken } = login(returnHash, validation)
 const loginStatus = document.getElementById('login_status')
 
 if (returnHash) {
   if (idToken) {
-    loginStatus.innerHTML = `Successful login for ${claims.preferred_username}`
-    console.log(claims) //write the claims to the console to show contents
+    loginStatus.innerHTML = `Successful login for ${idToken.claims.preferred_username}`
+    console.log(idToken.claims) //write the claims to the console to show contents
   } else {
     loginStatus.innerHTML = 'Failed login'
   }
@@ -153,9 +171,9 @@ if (returnHash) {
 
 ### Dev Server
 
-We're going to use [*parcel*](https://parceljs.org) for a local dev server, as it will bundle the `openid-implicit-grant` package for us. You can obviously use *Webpack* or *Rollup* for bundling.
+We're going to use [_parcel_](https://parceljs.org) for a local dev server, as it will bundle the `es-oidc-implicit-grant` package for us. You can obviously use _Webpack_ or _Rollup_ for bundling.
 
-Install *parcel* as per the instructions, then run the following command
+Install _parcel_ as per the instructions, then run the following command
 
 If parcel is installed globally
 
