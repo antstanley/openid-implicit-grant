@@ -19,7 +19,7 @@ You will need to implement your own state for the OpenID auth options. This libr
 ## Basic usage
 
 ```sh
-npm install es-oidc-implicit-grant
+npm install @esmodule/openid-implicit-grant
 ```
 
 Implicit grant with OpenID Connect requires calling a `/authorize` URL with various options specified. The client creates this URL, along with a `state` and `nonce` parameter to ensure uniqueness of the response.
@@ -27,7 +27,7 @@ Implicit grant with OpenID Connect requires calling a `/authorize` URL with vari
 Generate URL
 
 ```js
-import { login } from 'es-oidc-implicit-grant'
+import { login } from '@esmodule/openid-implicit-grant'
 
 const options = {
   domain: '* Domain name for your OIDC tenant, without http:// or /authorize *',
@@ -50,7 +50,7 @@ export default function authRedirect () {
 Decode returned JWT in the callback
 
 ```js
-import { callback } from 'es-oidc-implicit-grant'
+import { callback } from '@esmodule/openid-implicit-grant'
 
 // hash string in the funciton below is the string after the # in the url returned by the OIDC provider. It must not include #.
 function decodeToken (hash) {
@@ -101,7 +101,7 @@ Then create the following pages.
 Update `options` object in the JS below with the details from your OpenID connect provider
 
 ```js
-import { login } from 'es-oidc-implicit-grant'
+import { login } from '@esmodule/openid-implicit-grant'
 
 const options = {
   domain: '* Domain name for your OIDC tenant, without http:// or /authorize *',
@@ -148,7 +148,7 @@ This is the page that your OIDC provider will redirect to.
 #### callback.js
 
 ```js
-import { callback } from 'es-oidc-implicit-grant'
+import { callback } from '@esmodule/openid-implicit-grant'
 
 const returnHash = window.location.href.split('#')[1] || ''
 
@@ -171,7 +171,7 @@ if (returnHash) {
 
 ### Dev Server
 
-We're going to use [_parcel_](https://parceljs.org) for a local dev server, as it will bundle the `es-oidc-implicit-grant` package for us. You can obviously use _Webpack_ or _Rollup_ for bundling.
+We're going to use [_parcel_](https://parceljs.org) for a local dev server, as it will bundle the `@esmodule/openid-implicit-grant` package for us. You can obviously use _Webpack_ or _Rollup_ for bundling.
 
 Install _parcel_ as per the instructions, then run the following command
 
